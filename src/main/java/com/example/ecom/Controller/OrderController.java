@@ -24,11 +24,16 @@ public class OrderController {
         return orderService.placeOrder(userId, orderRequest);
     }
 
-
-
     //  GET USER ORDERS
     @GetMapping("/{userId}")
     public List<OrderResponse> getOrders(@PathVariable Long userId) {
         return orderService.getUserOrders(userId);
     }
+
+    @PutMapping("/cancel/{orderId}")
+    public Order cancelOrder(@PathVariable Long orderId) {
+        return orderService.cancelOrder(orderId);
+    }
+
+
 }

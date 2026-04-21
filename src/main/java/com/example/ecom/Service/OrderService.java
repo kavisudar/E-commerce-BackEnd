@@ -2,6 +2,7 @@ package com.example.ecom.Service;
 
 import com.example.ecom.DTO.OrderItemResponse;
 import com.example.ecom.DTO.OrderResponse;
+import com.example.ecom.Enum.OrderStatus;
 import com.example.ecom.Model.Cart;
 import com.example.ecom.Model.Order;
 import com.example.ecom.Model.OrderItem;
@@ -49,6 +50,7 @@ public class OrderService {
         order.setAddress(orderRequest.getAddress());
         order.setName(orderRequest.getName());
         order.setPhone(orderRequest.getPhone());
+        order.setStatus(OrderStatus.PLACED);
 
         // IMPORTANT RELATION FIX
         orderItems.forEach(i -> i.setOrder(order));
@@ -72,6 +74,7 @@ public class OrderService {
             res.setName(order.getName());
             res.setAddress(order.getAddress());
             res.setPhone(order.getPhone());
+            res.setStatus(order.getStatus().name());
 
             List<OrderItemResponse> items = order.getItems().stream().map(i -> {
                 OrderItemResponse item = new OrderItemResponse();
@@ -87,5 +90,18 @@ public class OrderService {
             return res;
 
         }).toList();
+    }
+    public Order cancelOrder(Long orderId) {
+
+        Order order = orderRepo.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Order not found"));
+
+        if (order.getStatus() == OrderStatus.CANCELLED) {
+            throw new RuntimeException("Order already cancelled");
+        }
+
+        order.setStatus(OrderStatus.CANCELLED);
+
+        return orderRepo.save(order);
     }
 }

@@ -1,5 +1,6 @@
 package com.example.ecom.Model;
 
+import com.example.ecom.Enum.OrderStatus;
 import jakarta.persistence.*;
 import lombok.Data;
 import java.util.List;
@@ -26,4 +27,7 @@ public class Order {
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
     private List<OrderItem> items;
+
+    @Enumerated(EnumType.STRING)
+    private OrderStatus status;
 }
