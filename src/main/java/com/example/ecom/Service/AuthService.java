@@ -1,5 +1,6 @@
 package com.example.ecom.Service;
 
+import com.example.ecom.Enum.Role;
 import com.example.ecom.Model.User;
 import com.example.ecom.Repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +19,7 @@ public class AuthService {
             return "Email already exists";
         }
         user.setPassword(passwordEncoder.encode(user.getPassword()));
+        user.setRole(Role.USER);
         userRepository.save(user);
         return "User registered successfully";
     }
@@ -26,6 +28,31 @@ public class AuthService {
         User user = userRepository.findByEmail(email).orElse(null);
         if (user == null) return null;
         if (!passwordEncoder.matches(password, user.getPassword())) return null;
+        return user;
+    }
+
+    public String registerAdmin(User user) {
+
+        if (userRepository.findByEmail(user.getEmail()).isPresent()) {
+            return "Email already exists";
+        }
+
+        user.setRole(Role.ADMIN);
+        userRepository.save(user);
+
+        return "Admin registered successfully";
+    }
+
+    public User adminLogin(String email, String password) {
+
+        User user = userRepository.findByEmail(email).orElse(null);
+
+        if (user == null) return null;
+
+        if (!user.getPassword().equals(password)) return null;
+
+        if (user.getRole() != Role.ADMIN) return null;
+
         return user;
     }
 }

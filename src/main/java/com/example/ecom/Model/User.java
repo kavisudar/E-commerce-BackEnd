@@ -1,5 +1,6 @@
 package com.example.ecom.Model;
 
+import com.example.ecom.Enum.Role;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.Data;
@@ -21,4 +22,8 @@ public class User {
 
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password;
+
+    @Enumerated(EnumType.STRING)
+    private Role role;
+
 }

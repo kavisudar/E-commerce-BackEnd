@@ -2,63 +2,59 @@ package com.example.ecom.Service;
 
 import com.example.ecom.Model.Cart;
 import com.example.ecom.Repository.CartItemRepository;
-import com.example.ecom.Repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import com.example.ecom.Model.User;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+
 import java.util.List;
-import java.util.Optional;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
 public class CartService {
 
     private final CartItemRepository cartRepo;
-    private final UserRepository userRepo;
+
+    private static final int DEFAULT_STEP = 1;
+    private static final int SPECIAL_STEP = 2;
+    private static final List<Long> SPECIAL_PRODUCT_IDS = List.of(1L, 4L);
+
 
     public Cart addToCart(Long userId, Cart item) {
-        User user = userRepo.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-
-        Optional<Cart> existing = cartRepo.findByUserIdAndProductId(userId, item.getProductId());
-
-        if (existing.isPresent()) {
-            Cart cartItem = existing.get();
-            cartItem.setQuantity(cartItem.getQuantity() + 1);
-            return cartRepo.save(cartItem);
-        } else {
-            item.setUser(user);
-            return cartRepo.save(item);
-        }
+        item.setUserId(userId);
+        return cartRepo.save(item);
     }
 
-    public Cart increaseQuantity(Long cartId) {
-        Cart cart = cartRepo.findById(cartId)
-                .orElseThrow(() -> new RuntimeException("Cart not found"));
-
-        cart.setQuantity(cart.getQuantity() + 1);
-        return cartRepo.save(cart);
+    public List<Cart> getUserCart(Long userId) {
+        return cartRepo.findByUserId(userId);
     }
 
     public void deleteCartItem(Long cartId) {
         cartRepo.deleteById(cartId);
     }
 
-    public Cart decreaseQuantity(Long cartId) {
-        Cart cart = cartRepo.findById(cartId)
-                .orElseThrow(() -> new RuntimeException("Cart not found"));
-
-        if (cart.getQuantity() > 1) {
-            cart.setQuantity(cart.getQuantity() - 1);
-        } else {
-            cartRepo.delete(cart); // remove if 0
-            return null;
-        }
-
-        return cartRepo.save(cart);
+    public ResponseEntity<?> increaseQty(Long id) {
+        return cartRepo.findById(id).map(item -> {
+            int step = SPECIAL_PRODUCT_IDS.contains(item.getProductId())
+                    ? SPECIAL_STEP
+                    : DEFAULT_STEP;
+            item.setQuantity(item.getQuantity() + step);
+            return ResponseEntity.ok(cartRepo.save(item));
+        }).orElse(ResponseEntity.notFound().build());
     }
 
-    public List<Cart> getUserCart(Long userId) {
-        return cartRepo.findByUserId(userId);
+    public ResponseEntity<?> decreaseQty(Long id) {
+        return cartRepo.findById(id).map(item -> {
+            int step = SPECIAL_PRODUCT_IDS.contains(item.getProductId())
+                    ? SPECIAL_STEP
+                    : DEFAULT_STEP;
+            int newQty = item.getQuantity() - step;
+            if (newQty <= 0) {
+                cartRepo.deleteById(id);
+                return ResponseEntity.ok(Map.of("message", "removed"));
+            }
+            item.setQuantity(newQty);
+            return ResponseEntity.ok(cartRepo.save(item));
+        }).orElse(ResponseEntity.notFound().build());
     }
 }

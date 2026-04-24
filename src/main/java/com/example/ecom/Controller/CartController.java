@@ -3,15 +3,16 @@ package com.example.ecom.Controller;
 import com.example.ecom.Model.Cart;
 import com.example.ecom.Service.CartService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/cart")
+@CrossOrigin(origins = "http://localhost:3000")
 @RequiredArgsConstructor
 public class CartController {
-
 
     private final CartService cartService;
 
@@ -26,20 +27,18 @@ public class CartController {
         return cartService.getUserCart(userId);
     }
 
-    @PutMapping("/increase/{cartId}")
-    public Cart increaseQty(@PathVariable Long cartId) {
-        return cartService.increaseQuantity(cartId);
+    @PutMapping("/increase/{id}")
+    public ResponseEntity<?> increaseQty(@PathVariable Long id) {
+        return cartService.increaseQty(id);
     }
 
-    @PutMapping("/decrease/{cartId}")
-    public Cart decreaseQty(@PathVariable Long cartId) {
-        return cartService.decreaseQuantity(cartId);
+    @PutMapping("/decrease/{id}")
+    public ResponseEntity<?> decreaseQty(@PathVariable Long id) {
+        return cartService.decreaseQty(id);
     }
 
     @DeleteMapping("/delete/{cartId}")
     public void deleteCartItem(@PathVariable Long cartId) {
         cartService.deleteCartItem(cartId);
     }
-
 }
-

@@ -10,7 +10,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
-@CrossOrigin(origins = "http://localhost:3000")
+@CrossOrigin(origins = "http://localhost:3000,http://localhost:3000/admin/auth")
 @RequiredArgsConstructor
 public class AuthController {
 
@@ -37,6 +37,30 @@ public class AuthController {
             return ResponseEntity.ok(user);
         } else {
             return ResponseEntity.status(401).body("Invalid credentials");
+        }
+    }
+    @PostMapping("/admin/register")
+    public ResponseEntity<?> registerAdmin(@RequestBody User user) {
+        try {
+            String response = authService.registerAdmin(user);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(e.getMessage());
+        }
+    }
+
+    @PostMapping("/admin/login")
+    public ResponseEntity<?> adminLogin(@RequestBody Map<String, String> data) {
+
+        String email = data.get("email");
+        String password = data.get("password");
+
+        User user = authService.adminLogin(email, password);
+
+        if (user != null) {
+            return ResponseEntity.ok(user);
+        } else {
+            return ResponseEntity.status(401).body("Invalid admin credentials");
         }
     }
 }
